@@ -207,4 +207,63 @@ struct DateTests {
     // Then
     #expect(dateStrings.count == dates.count)
   }
+
+  // MARK: - Simple Date
+  @Test
+  func simpleDate() {
+    // Given
+    let formatter: FeedDateFormatter = .init(spec: .simple)
+    let dateString = "2025-11-24 03:00:31"
+
+    let expected: DateComponents = .init(year: 2025, month: 11, day: 24, hour: 3, minute: 0, second: 31)
+
+    // When
+    let date = formatter.date(from: dateString)
+    let actual = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date!)
+
+    // Then
+    #expect(expected == actual)
+  }
+
+  @Test
+  func simpleDateSpec() {
+    // Given
+    let formatter: FeedDateFormatter = .init(spec: .simple)
+    let dateStrings = [
+      "2025-11-24 03:00:31",
+      "2024-12-05 10:30:00",
+      "2023-01-15 15:45:2",
+      "2022-06-30 09:12:55"
+    ]
+
+    // When
+    let dates = dateStrings.compactMap { dateString -> Date? in
+      formatter.date(from: dateString)
+    }
+
+    // Then
+    #expect(dateStrings.count == dates.count)
+  }
+  
+  @Test
+  func simpleDateWithVariableFormats() {
+    // Given
+    let formatter: FeedDateFormatter = .init(spec: .simple)
+    let dateStrings = [
+      "2025-1-24 03:00:31",  // yyyy-MM-dd HH:mm:ss
+      "2025-1-24 03:00:31",   // yyyy-M-dd HH:mm:ss
+      "2025-11-4 03:00:31",   // yyyy-MM-d HH:mm:ss
+      "2025-1-4 03:00:31",    // yyyy-M-d HH:mm:ss
+      "2025-11-24 03:00",     // yyyy-MM-dd HH:mm (without seconds)
+      "2025-1-24 03:00"       // yyyy-M-dd HH:mm (without seconds)
+    ]
+
+    // When
+    let dates = dateStrings.compactMap { dateString -> Date? in
+      formatter.date(from: dateString)
+    }
+
+    // Then
+    #expect(dateStrings.count == dates.count)
+  }
 }

@@ -221,6 +221,29 @@ final class RFC1123DateFormatter: PermissiveDateFormatter, @unchecked Sendable {
     ]
   }
 }
+// MARK: - SimpleDate formatter
+
+/// Formatter for simple date format (e.g., 2024-12-05 10:30:0).
+final class SimpleDateFormatter: PermissiveDateFormatter, @unchecked Sendable {
+  /// List of date formats supported for simple date format.
+  override var dateFormats: [String] {
+    [
+      "yyyy-MM-dd HH:mm:ss",
+      "yyyy-M-dd HH:mm:ss",
+      "yyyy-MM-d HH:mm:ss",
+      "yyyy-M-d HH:mm:ss"
+    ]
+  }
+  
+  override var permissiveDateFormats: [String] {
+    [
+      "yyyy-MM-dd HH:mm",
+      "yyyy-M-dd HH:mm",
+      "yyyy-MM-d HH:mm",
+      "yyyy-M-d HH:mm"
+    ]
+  }
+}
 
 // MARK: - DateSpec
 
@@ -234,8 +257,10 @@ enum DateSpec {
   case rfc822
   /// RFC1123 date format (e.g., Fri, 06 Sep 2024 12:34:56 GMT).
   case rfc1123
+  /// Simple date format (e.g., 2024-12-05 10:30:00).
+  case simple
   /// Permissive mode which attempts to parse the date using multiple formats.
-  /// It tries RFC822 first, then RFC3339, RFC1123 and finally ISO8601 in that order.
+  /// It tries RFC822 first, then RFC3339, RFC1123, ISO8601, and finally simple in that order.
   case permissive
 }
 
@@ -279,11 +304,14 @@ final class FeedDateFormatter: DateFormatter, @unchecked Sendable {
       rfc822Formatter.date(from: string)
     case .rfc1123:
       rfc1123Formatter.date(from: string)
+    case .simple:
+      simpleFormatter.date(from: string)
     case .permissive:
       rfc822Formatter.date(from: string) ??
         rfc3339Formatter.date(from: string) ??
         rfc1123Formatter.date(from: string) ??
-        iso8601Formatter.date(from: string)
+        iso8601Formatter.date(from: string) ??
+        simpleFormatter.date(from: string)
     }
   }
 
@@ -302,6 +330,8 @@ final class FeedDateFormatter: DateFormatter, @unchecked Sendable {
       rfc822Formatter.string(from: date)
     case .rfc1123:
       rfc1123Formatter.string(from: date)
+    case .simple:
+      simpleFormatter.string(from: date)
     case .permissive:
       fatalError()
     }
@@ -323,4 +353,7 @@ final class FeedDateFormatter: DateFormatter, @unchecked Sendable {
 
   /// RFC1123 date formatter.
   private lazy var rfc1123Formatter: RFC1123DateFormatter = .init()
+  
+  /// Simple date formatter.
+  private lazy var simpleFormatter: SimpleDateFormatter = .init()
 }
